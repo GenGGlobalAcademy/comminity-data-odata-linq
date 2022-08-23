@@ -23,8 +23,11 @@ namespace Community.OData.Linq.OData.Formatter
     using Microsoft.OData.Edm.Vocabularies.V1;
     using Microsoft.OData.UriParser;
 
-    internal static class EdmLibHelpers
+    public static class EdmLibHelpers
     {
+        public delegate string GetClrTypeName(IEdmModel edmModel, IEdmProperty edmProperty);
+        public static GetClrTypeName GetClrTypeNameInvoke = null;
+
         private static readonly EdmCoreModel _coreModel = EdmCoreModel.Instance;
 
         private static ConcurrentDictionary<IEdmNavigationSource, IEnumerable<IEdmStructuralProperty>> _concurrencyProperties;
@@ -113,7 +116,7 @@ namespace Community.OData.Linq.OData.Formatter
                     if (enumerableOfT != null)
                     {
                         Type elementClrType = enumerableOfT.GetGenericArguments()[0];
-                        
+
                         IEdmType elementType = GetEdmType(edmModel, elementClrType, testCollections: false);
                         if (elementType != null)
                         {
@@ -244,7 +247,7 @@ namespace Community.OData.Linq.OData.Formatter
             return matchingTypes.SingleOrDefault();
         }
 
-        
+
 
         public static bool IsNotSelectable(IEdmProperty edmProperty, IEdmProperty pathEdmProperty,
             IEdmStructuredType pathEdmStructuredType, IEdmModel edmModel, bool enableSelect)
@@ -272,7 +275,7 @@ namespace Community.OData.Linq.OData.Formatter
             }
         }
 
-        
+
 
         public static bool IsAutoSelect(IEdmProperty property, IEdmProperty pathProperty,
             IEdmStructuredType pathStructuredType, IEdmModel edmModel, ModelBoundQuerySettings querySettings = null)
@@ -425,7 +428,7 @@ namespace Community.OData.Linq.OData.Formatter
             }
             return false;
         }
-        
+
         public static bool IsExpandable(string propertyName, IEdmProperty property, IEdmStructuredType structuredType,
             IEdmModel edmModel,
             out ExpandConfiguration expandConfiguration)
@@ -559,7 +562,7 @@ namespace Community.OData.Linq.OData.Formatter
 
             return false;
         }
-        
+
         public static bool IsNotNavigable(IEdmProperty edmProperty, IEdmModel edmModel)
         {
             QueryableRestrictionsAnnotation annotation = GetPropertyRestrictions(edmProperty, edmModel);
@@ -657,24 +660,32 @@ namespace Community.OData.Linq.OData.Formatter
 
         public static string GetClrPropertyName(IEdmProperty edmProperty, IEdmModel edmModel)
         {
-            if (edmProperty == null)
-            {
-                throw Error.ArgumentNull("edmProperty");
-            }
-
-            if (edmModel == null)
-            {
-                throw Error.ArgumentNull("edmModel");
-            }
-
             string propertyName = edmProperty.Name;
-            ClrPropertyInfoAnnotation annotation = edmModel.GetAnnotationValue<ClrPropertyInfoAnnotation>(edmProperty);
-            if (annotation != null)
+
+            if (GetClrTypeNameInvoke != null)
             {
-                PropertyInfo propertyInfo = annotation.ClrPropertyInfo;
-                if (propertyInfo != null)
+                propertyName = GetClrTypeNameInvoke(edmModel, edmProperty);
+            }
+            else
+            {
+                if (edmProperty == null)
                 {
-                    propertyName = propertyInfo.Name;
+                    throw Error.ArgumentNull("edmProperty");
+                }
+
+                if (edmModel == null)
+                {
+                    throw Error.ArgumentNull("edmModel");
+                }
+
+                ClrPropertyInfoAnnotation annotation = edmModel.GetAnnotationValue<ClrPropertyInfoAnnotation>(edmProperty);
+                if (annotation != null)
+                {
+                    PropertyInfo propertyInfo = annotation.ClrPropertyInfo;
+                    if (propertyInfo != null)
+                    {
+                        propertyName = propertyInfo.Name;
+                    }
                 }
             }
 
@@ -902,12 +913,12 @@ namespace Community.OData.Linq.OData.Formatter
                 return querySettings;
             }
         }
-        
+
         private static IEdmPrimitiveType GetPrimitiveType(EdmPrimitiveTypeKind primitiveKind)
         {
             return _coreModel.GetPrimitiveType(primitiveKind);
         }
-        
+
         private static Type ExtractGenericInterface(Type queryType, Type interfaceType)
         {
             Func<Type, bool> matchesInterface = t => t.IsGenericType && t.GetGenericTypeDefinition() == interfaceType;
