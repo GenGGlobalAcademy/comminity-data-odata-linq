@@ -1287,7 +1287,18 @@ namespace Community.OData.Linq.OData.Query.Expressions
 
             Contract.Assert(arguments.Length == 2 && arguments[0].Type == typeof(string) && arguments[1].Type == typeof(string));
 
-            return this.MakeFunctionCall(ClrCanonicalFunctions.Contains, arguments[0], arguments[1]);
+            if (node.Source == null)
+            {
+                BinaryOperatorNode notNullNode = new BinaryOperatorNode(BinaryOperatorKind.NotEqual, node.Parameters.First() as SingleValueNode, new ConstantNode(null, "null"));
+                SingleValueFunctionCallNode containsNode = new SingleValueFunctionCallNode(node.Name, node.Functions, node.Parameters, node.TypeReference, notNullNode);
+                BinaryOperatorNode notNullAndContains = new BinaryOperatorNode(BinaryOperatorKind.And, notNullNode, containsNode);
+
+                return BindBinaryOperatorNode(notNullAndContains);
+            }
+            else
+            {
+                return this.MakeFunctionCall(ClrCanonicalFunctions.Contains, arguments[0], arguments[1]);
+            }
         }
 
         private Expression BindStartsWith(SingleValueFunctionCallNode node)
@@ -1299,7 +1310,18 @@ namespace Community.OData.Linq.OData.Query.Expressions
 
             Contract.Assert(arguments.Length == 2 && arguments[0].Type == typeof(string) && arguments[1].Type == typeof(string));
 
-            return this.MakeFunctionCall(ClrCanonicalFunctions.StartsWith, arguments);
+            if (node.Source == null)
+            {
+                BinaryOperatorNode notNullNode = new BinaryOperatorNode(BinaryOperatorKind.NotEqual, node.Parameters.First() as SingleValueNode, new ConstantNode(null, "null"));
+                SingleValueFunctionCallNode containsNode = new SingleValueFunctionCallNode(node.Name, node.Functions, node.Parameters, node.TypeReference, notNullNode);
+                BinaryOperatorNode notNullAndContains = new BinaryOperatorNode(BinaryOperatorKind.And, notNullNode, containsNode);
+
+                return BindBinaryOperatorNode(notNullAndContains);
+            }
+            else
+            {
+                return this.MakeFunctionCall(ClrCanonicalFunctions.StartsWith, arguments[0], arguments[1]);
+            }
         }
 
         private Expression BindEndsWith(SingleValueFunctionCallNode node)
@@ -1310,6 +1332,19 @@ namespace Community.OData.Linq.OData.Query.Expressions
             ValidateAllStringArguments(node.Name, arguments);
 
             Contract.Assert(arguments.Length == 2 && arguments[0].Type == typeof(string) && arguments[1].Type == typeof(string));
+
+            if (node.Source == null)
+            {
+                BinaryOperatorNode notNullNode = new BinaryOperatorNode(BinaryOperatorKind.NotEqual, node.Parameters.First() as SingleValueNode, new ConstantNode(null, "null"));
+                SingleValueFunctionCallNode containsNode = new SingleValueFunctionCallNode(node.Name, node.Functions, node.Parameters, node.TypeReference, notNullNode);
+                BinaryOperatorNode notNullAndContains = new BinaryOperatorNode(BinaryOperatorKind.And, notNullNode, containsNode);
+
+                return BindBinaryOperatorNode(notNullAndContains);
+            }
+            else
+            {
+                return this.MakeFunctionCall(ClrCanonicalFunctions.EndsWith, arguments[0], arguments[1]);
+            }
 
             return this.MakeFunctionCall(ClrCanonicalFunctions.EndsWith, arguments);
         }

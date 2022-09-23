@@ -45,9 +45,9 @@ namespace Community.OData.Linq.OData.Query.Expressions
         internal const string TimeFunctionName = "time";
 
         // string functions
-        public static readonly MethodInfo StartsWith = MethodOf(_ => NullableStartWith(_defaultString, default(string)));
-        public static readonly MethodInfo EndsWith = MethodOf(_ => NullableEndWith(_defaultString, default(string)));
-        public static readonly MethodInfo Contains = MethodOf(_ => NullableContains(_defaultString, default(string)));
+        public static readonly MethodInfo StartsWith = MethodOf(_ => _defaultString.StartsWith(default(string)));
+        public static readonly MethodInfo EndsWith = MethodOf(_ => _defaultString.EndsWith(default(string)));
+        public static readonly MethodInfo Contains = MethodOf(_ => _defaultString.Contains(default(string)));
         public static readonly MethodInfo SubstringStart = MethodOf(_ => _defaultString.Substring(default(int)));
         public static readonly MethodInfo SubstringStartAndLength = MethodOf(_ => _defaultString.Substring(default(int), default(int)));
         public static readonly MethodInfo SubstringStartNoThrow = MethodOf(_ => ClrSafeFunctions.SubstringStart(default(string), default(int)));
@@ -143,21 +143,6 @@ namespace Community.OData.Linq.OData.Query.Expressions
             Contract.Assert(expression.NodeType == ExpressionType.Lambda);
             Contract.Assert(lambdaExpression.Body.NodeType == ExpressionType.Call);
             return (lambdaExpression.Body as MethodCallExpression).Method;
-        }
-
-        private static bool NullableStartWith(string instance, string value)
-        {
-            return instance != null && instance.StartsWith(value);
-        }
-
-        private static bool NullableEndWith(string instance, string value)
-        {
-            return instance != null && instance.EndsWith(value);
-        }
-
-        private static bool NullableContains(string instance, string value)
-        {
-            return instance != null && instance.Contains(value);
         }
     }
 }
