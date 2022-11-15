@@ -100,6 +100,11 @@ namespace Community.OData.Linq.OData.Query.Expressions
             return false;
         }
 
+        public object GetInstance()
+        {
+            return this.Instance;
+        }
+
         public IDictionary<string, object> ToDictionary()
         {
             return this.ToDictionary(_mapperProvider);
