@@ -37,5 +37,7 @@ namespace Community.OData.Linq
         /// </param>
         /// <returns>An <see cref="IPropertyMapper"/> representing the $select and $expand result.</returns>
         IDictionary<string, object> ToDictionary(Func<IEdmModel, IEdmStructuredType, IPropertyMapper> propertyMapperProvider);
+
+        object GetInstance();
     }
 }
